@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Week 2 JavaScript Lab</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            @font-face {
+                font-family: digital;
+                src: url(fonts/DS-DIGIT.TTF);
+            }
+            @font-face {
+                font-family: slime;
+                src: url(fonts/Slimespooky.ttf);
+            }
+            body{
+                background-color: #2b2d42;
+            }
+            #wrapper{
+                width: 100%;
+                text-align: center;
+            }
+            #counter{
+                font-family: "digital";
+                color: #ff4d6d;
+                background-color: #111111;
+                font-size: 56px;
+                width: 120px;
+                padding: 5px 0;
+                margin-left: auto;
+                margin-right: auto;
+                border: 8px ridge silver;
+                border-radius: 8px;
+            }
+            h1, h2{
+                font-family: "slime";
+                font-weight: normal;
+                color: #8ecae6;
+            }
+            #status{
+                color: white;
+                font-size: 18px;
+            }
+            #tap-btn{
+                background: none;
+                border: none;
+                cursor: pointer;
+                transition: transform 0.1s;
+            }
+            #tap-btn:hover{
+                transform: scale(1.1);
+            }
+            #tap-btn:active{
+                transform: scale(0.85);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="wrapper">
+            <h1>Week 2 JavaScript Lab</h1>
+            <span id="status"></span>
+            <hr>
+            <br>
+            <h2>Tap Counter</h2>
+            <h3 id="counter">0</h3>
+            <button type="button" id="tap-btn">
+                <img src="images/buttonclicker.png" alt="Tap Button" width="110">
+            </button>
+            <br>
+            <input type="button" value="Reset Counter" id="reset-btn">
+        </div>
+
+        <script>
+            //Tap Counter Game
+            var tapButton = document.querySelector("#tap-btn");
+            var resetButton = document.querySelector("#reset-btn");
+            var counterDisplay = document.querySelector("#counter");
+            var statusText = document.querySelector("#status");
+            var tapSound = new Audio("audio/button-1.mp3");
+
+            var tapCount = 0;
+            var goal = 30;
+
+            tapButton.addEventListener("click", function(){
+                tapCount++;
+                refreshCounter();
+                tapSound.currentTime = 0;
+                tapSound.play();
+
+                if(tapCount == goal){
+                    alert(`Nice! You hit ${goal} taps!`);
+                }
+            });
+
+            resetButton.addEventListener("click", function(){
+                tapCount = 0;
+                refreshCounter();
+            });
+
+            function refreshCounter(){
+                counterDisplay.innerHTML = tapCount;
+                statusText.innerHTML = `Taps until goal: ${Math.max(goal - tapCount, 0)}`;
+            }
+
+            refreshCounter();
+        </script>
+    </body>
+</html>
