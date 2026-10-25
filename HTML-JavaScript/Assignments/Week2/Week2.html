@@ -6,12 +6,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             @font-face {
-                font-family: digital;
-                src: url(fonts/DS-DIGIT.TTF);
-            }
-            @font-face {
                 font-family: slime;
-                src: url(fonts/Slimespooky.ttf);
+                src: url(Fonts/Slimespooky.ttf);
             }
             body{
                 background-color: #2b2d42;
@@ -21,7 +17,7 @@
                 text-align: center;
             }
             #counter{
-                font-family: "digital";
+                font-family: monospace;
                 color: #ff4d6d;
                 background-color: #111111;
                 font-size: 56px;
@@ -64,7 +60,7 @@
             <h2>Tap Counter</h2>
             <h3 id="counter">0</h3>
             <button type="button" id="tap-btn">
-                <img src="images/buttonclicker.png" alt="Tap Button" width="110">
+                <img src="Images/buttonclicker.png" alt="Tap Button" width="110">
             </button>
             <br>
             <input type="button" value="Reset Counter" id="reset-btn">
@@ -76,7 +72,7 @@
             var resetButton = document.querySelector("#reset-btn");
             var counterDisplay = document.querySelector("#counter");
             var statusText = document.querySelector("#status");
-            var tapSound = new Audio("audio/button-1.mp3");
+            var tapSound = new Audio("Audio/button-1.mp3");
 
             var tapCount = 0;
             var goal = 30;
