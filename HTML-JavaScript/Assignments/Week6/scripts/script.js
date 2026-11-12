@@ -1,0 +1,297 @@
+//alert("Welcome to the Lab");
+/*
+Allows you to comment multiple lines of code
+Week 4 Lab - Experimenting with canvas animation */
+
+
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+var fps = 1000 / 60;
+var timer = setInterval(game, fps);
+
+var startPoint = { x: canvas.width / 2, y: canvas.height / 2 };//canvas.width/2;
+var moveDirection = { x: 1, y: 1 };
+
+var boxColor = "red";
+var shipSprite = { image: document.getElementById("ship"), x: 1, y: 1, moveX: 0, moveY: 0 };
+
+var acceleration = 0.5;
+var friction = .94;
+
+var score = 0;
+
+var states = ["title", "game"];
+states = "title";
+
+function createStar() {
+    var star = {
+        x: 0,
+        y: 0,
+        radius: 0,
+        color: "black",
+        drawCircle: function () {
+            ctx.beginPath()
+            ctx.fillStyle = this.color;
+            ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+            ctx.fill();
+        },
+    }
+    return star;
+}
+
+var starCount = 50;
+var stars = [];//Creates an array
+for (var i = 0; i < starCount; i++) {
+    stars[i] = createStar();
+    stars[i].x = Math.random() * canvas.width;
+    stars[i].y = Math.random() * canvas.height;
+    stars[i].radius = Math.random() * 5;
+    stars[i].color = "white";
+}
+
+shipSprite.x = canvas.width / 2;
+shipSprite.y = canvas.height / 2 + 100;
+var a = false;
+var d = false;
+var w = false;
+var s = false;
+var space = false;
+var enter = false;
+
+//Add variable for the bullets
+var bullets = [];
+var shootCooldown = 0;
+var startCooldown = 0;
+var startDelayFrames = 120;
+
+//on key pressed
+document.addEventListener("keydown", function (e) {
+    console.log(e.key);
+    if (e.key == "a") { a = true; }
+    if (e.key == "d") { d = true; }
+    if (e.key == "w") { w = true; }
+    if (e.key == "s") { s = true; }
+    if (e.code === "Space") {
+        space = true;
+        e.preventDefault();
+    }
+    if (e.key == "Enter") { enter = true; }
+});
+
+//on key released
+document.addEventListener("keyup", function (e) {
+    console.log(e.key);
+    if (e.key == "a") { a = false; }
+    if (e.key == "d") { d = false; }
+    if (e.key == "w") { w = false; }
+    if (e.key == "s") { s = false; }
+    if (e.code === "Space") { space = false; }
+    if (e.key == "Enter") { enter = false; }
+});
+
+
+//Event for button click
+canvas.addEventListener("click", function (e) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (states === "title" && 
+        mouseX >= canvas.width / 2 - 100 && 
+        mouseX <= canvas.width / 2 + 100 && 
+        mouseY >= canvas.height / 2 + 80 && 
+        mouseY <= canvas.height / 2 + 160) {
+        startCooldown = startDelayFrames;
+        switchScenes("game");
+    }
+});
+
+//This is our Game Loop Function
+function game() {
+    //clear the screen
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    switch (states) {
+        case "title":
+            ctx.fillStyle = 'black';
+            ctx.font = "50px Arial";
+            let titleText = "Star Shooter";
+            ctx.fillText(titleText, canvas.width / 2 - (ctx.measureText(titleText).width / 2), canvas.height / 2 - 20);
+            ctx.font = "16px Arial";
+            let instructionText = "(Press enter to start)";
+            ctx.fillText(instructionText, canvas.width / 2 - (ctx.measureText(instructionText).width / 2), canvas.height / 2 + 40);
+
+            //Draws the button
+            ctx.fillStyle = "red";
+            ctx.fillRect(canvas.width / 2 - 100, canvas.height / 2 + 80, 200, 80);
+            //Draws text on the button
+            ctx.fillStyle = "black";
+            ctx.font = "34px Arial";
+            let buttonText = "Start Game";
+            ctx.fillText(buttonText, canvas.width / 2 - (ctx.measureText(buttonText).width / 2) , canvas.height / 2 + 130);
+
+            if (enter) {
+                startCooldown = startDelayFrames;
+                switchScenes("game");
+            }
+
+            
+
+
+            break;
+        case "game":
+
+            if (startCooldown > 0) {
+                startCooldown--;
+            }
+
+            startPoint.x += moveDirection.x;
+            startPoint.y += moveDirection.y;
+
+            //Check for collision between the ship and the startpoint box
+            var hitBox = shipSprite.x < startPoint.x + 25 && shipSprite.x + 25 > startPoint.x && shipSprite.y < startPoint.y + 25 && shipSprite.y + 25 > startPoint.y;
+
+            //Colliding with box
+            if (hitBox == true && startCooldown <= 0) {
+                //The startpoint sprite hit the player
+                shipSprite.x = canvas.width / 2;
+                shipSprite.y = canvas.height / 2 + 100;
+                shipSprite.moveX = 0;
+                shipSprite.moveY = 0;
+                score = 0;
+                startCooldown = startDelayFrames;
+                switchScenes("title");
+            }
+
+            if (a == true) { shipSprite.moveX -= acceleration }
+            if (d == true) { shipSprite.moveX += acceleration }
+            if (w == true) { shipSprite.moveY -= acceleration }
+            if (s == true) { shipSprite.moveY += acceleration }
+
+            // if ship is off the right side of the screen make it come out the other side
+            if (shipSprite.x > canvas.width) { shipSprite.x = -25; }
+            if (shipSprite.x < -25) { shipSprite.x = canvas.width; }
+
+            if (startPoint.y > canvas.height - 25 || startPoint.y < 0) {
+                moveDirection.y *= -1;
+                boxColor = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
+            }
+            if (startPoint.x > canvas.width - 25 || startPoint.x < 0) {
+                moveDirection.x *= -1;
+                boxColor = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
+            }
+
+            //Bullet firing code
+            if (shootCooldown > 0) {
+                shootCooldown--;
+            }
+
+            if (space && shootCooldown === 0) {
+                bullets.push({
+                    x: shipSprite.x + 25 / 2 - 2,
+                    y: shipSprite.y + -10,
+                    width: 4,
+                    height: 10,
+                    speed: 8,
+                    color: "white"
+                });
+                shootCooldown = 10;
+            }
+
+            //Apply friction to slow down the ship
+            shipSprite.moveX *= friction;
+            shipSprite.moveY *= friction;
+
+            //Update the X and Y position values
+            shipSprite.x += shipSprite.moveX;
+            shipSprite.y += shipSprite.moveY;
+
+            //Draws Background
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            //Draws Stars
+            for (var i = 0; i < stars.length; i++) {
+                //Collide with Star (uses the star's real round size)
+                if (shipToStarCollision(shipSprite, stars[i]) && startCooldown <= 0) {
+                    shipSprite.x = canvas.width / 2;
+                    shipSprite.y = canvas.height / 2 + 100;
+                    shipSprite.moveX = 0;
+                    shipSprite.moveY = 0;
+                    score = 0;
+                    startCooldown = startDelayFrames;
+                    switchScenes("title");
+                }
+                stars[i].drawCircle();
+                stars[i].y++;
+                if (stars[i].y > canvas.height + stars[i].radius * 2) {
+                    stars[i].x = Math.random() * canvas.width;
+                    stars[i].y = -(Math.random() * canvas.height);
+                    score += 10;
+                }
+            }
+
+            for (var i = bullets.length - 1; i >= 0; i--) {
+                var bullet = bullets[i];
+                bullet.y -= bullet.speed;
+                if (bullet.y + bullet.height < 0) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+                var hitBoxBullet = bullet.x < startPoint.x + 25 && bullet.x + bullet.width > startPoint.x && bullet.y < startPoint.y + 25 && bullet.y + bullet.height > startPoint.y;
+                if (hitBoxBullet) {
+                    bullets.splice(i, 1);
+                    startPoint.x = Math.random() * (canvas.width - 25); // Moves target away when shot
+                    startPoint.y = Math.random() * (canvas.height - 25);
+                    continue;
+                }
+
+                //Check if the bullet hit a star
+                var hitStar = false;
+                for (var j = 0; j < stars.length; j++) {
+                    if (shipToStarCollision(bullet, stars[j])) {
+                        stars[j].x = Math.random() * canvas.width;
+                        stars[j].y = -(Math.random() * canvas.height);
+                        hitStar = true;
+                        break; //stop checking, this bullet is used up
+                    }
+                }
+                if (hitStar) {
+                    bullets.splice(i, 1);
+                    continue; //skip drawing the bullet
+                }
+
+                ctx.fillStyle = bullet.color;
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            }
+
+            //Draws Ship and box
+            ctx.fillStyle = boxColor;
+            ctx.fillRect(startPoint.x, startPoint.y, 25, 25);
+            ctx.drawImage(shipSprite.image, shipSprite.x, shipSprite.y, 25, 25);
+
+            //Draw hud element
+            ctx.fillStyle = "white";
+            ctx.font = "30px Arial";
+            ctx.fillText(`Score: ${score}`, 30, 80);
+            break;
+    }
+
+}
+
+
+
+function shipToStarCollision(obj, star) {
+    var closestX = Math.max(obj.x, Math.min(star.x, obj.x + 25));
+    var closestY = Math.max(obj.y, Math.min(star.y, obj.y + 25));
+    var dX = star.x - closestX;
+    var dY = star.y - closestY;
+    var dist = dX * dX + dY * dY;
+    return dist <= star.radius * star.radius;
+}
+
+
+function switchScenes(nameOfScene) {
+    states = nameOfScene;
+}
